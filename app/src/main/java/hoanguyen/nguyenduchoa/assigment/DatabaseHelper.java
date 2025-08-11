@@ -11,7 +11,7 @@ import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "ProductManagement.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Table NguoiDung (User)
     public static final String TABLE_NGUOI_DUNG = "NguoiDung";
@@ -117,6 +117,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursorCount > 0;
     }
 
+    // Debug method to list all users
+    public List<String> getAllUsernames() {
+        List<String> usernames = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] columns = {COLUMN_TEN_DANG_NHAP, COLUMN_MAT_KHAU, COLUMN_HO_TEN};
+
+        Cursor cursor = db.query(TABLE_NGUOI_DUNG, columns, null, null, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                String username = cursor.getString(cursor.getColumnIndex(COLUMN_TEN_DANG_NHAP));
+                String password = cursor.getString(cursor.getColumnIndex(COLUMN_MAT_KHAU));
+                String fullName = cursor.getString(cursor.getColumnIndex(COLUMN_HO_TEN));
+                usernames.add("User: " + username + ", Pass: " + password + ", Name: " + fullName);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return usernames;
+    }
+
     // Product methods
     public boolean addProduct(Product product) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -138,13 +158,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.query(TABLE_SAN_PHAM, columns, null, null, null, null, null);
 
         if (cursor.moveToFirst()) {
+            int maSPIndex = cursor.getColumnIndex(COLUMN_MA_SP);
+            int tenSPIndex = cursor.getColumnIndex(COLUMN_TEN_SP);
+            int giaBanIndex = cursor.getColumnIndex(COLUMN_GIA_BAN);
+            int soLuongIndex = cursor.getColumnIndex(COLUMN_SO_LUONG);
+            
             do {
                 Product product = new Product(
-                        cursor.getString(cursor.getColumnIndex(COLUMN_TEN_SP)),
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_GIA_BAN)),
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_SO_LUONG))
+                        cursor.getString(tenSPIndex),
+                        cursor.getInt(giaBanIndex),
+                        cursor.getInt(soLuongIndex)
                 );
-                product.setMaSP(cursor.getString(cursor.getColumnIndex(COLUMN_MA_SP)));
+                product.setMaSP(cursor.getString(maSPIndex));
                 productList.add(product);
             } while (cursor.moveToNext());
         }
@@ -182,18 +207,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String[] selectionArgs = {maSP};
 
         Cursor cursor = db.query(TABLE_SAN_PHAM, columns, selection, selectionArgs, null, null, null);
-
-        if (cursor.moveToFirst()) {
-            Product product = new Product(
-                    cursor.getString(cursor.getColumnIndex(COLUMN_TEN_SP)),
-                    cursor.getInt(cursor.getColumnIndex(COLUMN_GIA_BAN)),
-                    cursor.getInt(cursor.getColumnIndex(COLUMN_SO_LUONG))
-            );
-            product.setMaSP(cursor.getString(cursor.getColumnIndex(COLUMN_MA_SP)));
+        
+        try {
+            if (cursor.moveToFirst()) {
+                int maSPIndex = cursor.getColumnIndex(COLUMN_MA_SP);
+                int tenSPIndex = cursor.getColumnIndex(COLUMN_TEN_SP);
+                int giaBanIndex = cursor.getColumnIndex(COLUMN_GIA_BAN);
+                int soLuongIndex = cursor.getColumnIndex(COLUMN_SO_LUONG);
+                
+                Product product = new Product(
+                        cursor.getString(tenSPIndex),
+                        cursor.getInt(giaBanIndex),
+                        cursor.getInt(soLuongIndex)
+                );
+                product.setMaSP(cursor.getString(maSPIndex));
+                return product;
+            }
+            return null;
+        } finally {
             cursor.close();
-            return product;
         }
-        cursor.close();
-        return null;
     }
 }

@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.List;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText etUsername, etPassword;
@@ -62,10 +64,35 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // In real app, this would save to database
-        Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-        startActivity(intent);
-        finish();
+        // Check if username already exists
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        if (databaseHelper.isUsernameExists(username)) {
+            Toast.makeText(this, "Tên đăng nhập đã tồn tại!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Register user to database
+        boolean success = databaseHelper.registerUser(username, password, username); // Use username as fullName
+        if (success) {
+            Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+            
+            // Debug: Show all users in database
+            List<String> allUsers = databaseHelper.getAllUsernames();
+            StringBuilder debugInfo = new StringBuilder("Users in DB: ");
+            for (String user : allUsers) {
+                debugInfo.append("\n").append(user);
+            }
+            Toast.makeText(this, debugInfo.toString(), Toast.LENGTH_LONG).show();
+            
+            // Clear the form
+            etUsername.setText("");
+            etPassword.setText("");
+            // Go back to login screen
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            Toast.makeText(this, "Đăng ký thất bại!", Toast.LENGTH_SHORT).show();
+        }
     }
 } 

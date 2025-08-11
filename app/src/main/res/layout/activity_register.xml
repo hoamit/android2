@@ -58,7 +58,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Enter username"
-            android:text="dinhnt"
+            android:text=""
             android:background="@drawable/edit_text_background"
             android:padding="12dp"
             android:layout_marginBottom="16dp" />
@@ -78,7 +78,7 @@
             android:layout_height="48dp"
             android:hint="Enter password"
             android:inputType="textPassword"
-            android:text="*****"
+            android:text=""
             android:background="@drawable/edit_text_background"
             android:padding="12dp"
             android:layout_marginBottom="24dp" />
